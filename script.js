@@ -1,69 +1,49 @@
-// Connect to WebSocket backend
-const socket = io("https://disaster-response-backend.onrender.com/"); // Replace with your backend URL
+const socket = io("https://disaster-response-backend.onrender.com/"); // Replace with your Render backend URL
 
 // Initialize map
 const map = L.map("map").setView([14.0856, 121.1450], 13); // Default view: Tanauan, Batangas
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-let markers = {}; // Store markers
-let routeLayer;
-
-function selectRole(selectedRole) {
-    document.getElementById("roleSelection").style.display = "none";
-    
-    if (selectedRole === "requester") {
-        document.getElementById("requesterDashboard").style.display = "block";
-    } else if (selectedRole === "volunteer") {
-        document.getElementById("volunteerDashboard").style.display = "block";
-    }
-
-    getLocation(selectedRole);
-}
-
+let requesterMarker, volunteerMarker, routeLayer;
 
 // Listen for location updates
-socket.on("receiveLocation", (locations) => {
-    console.log("Received locations:", locations); // Debugging
+socket.on("receiveLocation", (data) => {
+    const { role, lat, lng } = data;
 
-    // Remove existing markers
-    Object.values(markers).forEach(marker => map.removeLayer(marker));
-    markers = {};
+    if (role === "requester") {
+        if (requesterMarker) map.removeLayer(requesterMarker);
+        requesterMarker = L.marker([lat, lng]).addTo(map)
+            .bindPopup("Requester Location").openPopup();
+    } else if (role === "volunteer") {
+        if (volunteerMarker) map.removeLayer(volunteerMarker);
+        volunteerMarker = L.marker([lat, lng]).addTo(map)
+            .bindPopup("Volunteer Location").openPopup();
+    }
 
-    Object.entries(locations).forEach(([id, data]) => {
-        if (data.lat !== undefined && data.lng !== undefined) { // Ensure valid location
-            let marker = L.marker([data.lat, data.lng]).addTo(map)
-                .bindPopup(`${data.role} Location`).openPopup();
-            markers[id] = marker;
-        } else {
-            console.error(`Invalid location data for ${id}:`, data);
-        }
-    });
-
-    // Find requester and volunteer for routing
-    const requester = Object.values(locations).find(loc => loc.role === "requester");
-    const volunteer = Object.values(locations).find(loc => loc.role === "volunteer");
-
-    if (requester && volunteer && requester.lat !== undefined && volunteer.lat !== undefined) {
-        drawRoute([requester.lat, requester.lng], [volunteer.lat, volunteer.lng]);
+    // If both locations exist, draw the route
+    if (requesterMarker && volunteerMarker) {
+        drawRoute(requesterMarker.getLatLng(), volunteerMarker.getLatLng());
     }
 });
 
-// Function to get and send user's location
+// Function to request and send the user's location
 function getLocation(role) {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            const { latitude, longitude } = position.coords;
-            socket.emit("sendLocation", { role, lat: latitude, lng: longitude });
-        }, (error) => console.error("Error getting location:", error));
-    } else {
-        alert("Geolocation is not supported by your browser.");
-    }
+    navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        socket.emit("sendLocation", { role, lat: latitude, lng: longitude });
+    }, (error) => console.error("Error getting location:", error));
 }
 
-// Function to draw route between requester & volunteer
+// Ask user for their role (requester or volunteer)
+const userRole = prompt("Are you a 'requester' or 'volunteer'?");
+if (userRole === "requester" || userRole === "volunteer") {
+    getLocation(userRole);
+}
+
+// Function to draw a route between requester & volunteer
 function drawRoute(start, end) {
     const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2"; // Replace with your GraphHopper API key
-    const url = `https://graphhopper.com/api/1/route?point=${start[0]},${start[1]}&point=${end[0]},${end[1]}&vehicle=car&locale=en&points_encoded=false&key=${apiKey}`;
+    const url = `https://graphhopper.com/api/1/route?point=${start.lat},${start.lng}&point=${end.lat},${end.lng}&vehicle=car&locale=en&points_encoded=false&key=${apiKey}`;
 
     fetch(url)
         .then(response => response.json())
