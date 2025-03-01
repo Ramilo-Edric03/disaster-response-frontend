@@ -3,38 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disaster Response System</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <title>Disaster Response Map</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        #map { height: 400px; width: 100%; margin: 10px 0; }
-        .dashboard { display: none; }
+        body, html { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 80vh; width: 100%; }
+        .controls { padding: 10px; text-align: center; }
+        button { padding: 10px 15px; font-size: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>Disaster Response System</h1>
-    
-   <div id="roleSelection">
-    <button onclick="selectRole('requester')">I Need Help</button>
-    <button onclick="selectRole('volunteer')">I Want to Help</button>
-</div>
 
-    <div id="requesterDashboard" class="dashboard">
-        <h2>Requester Dashboard</h2>
-        <p>Your location: <span id="requesterLocation">Detecting...</span></p>
-        <button onclick="sendHelpRequest()">Request Help</button>
-        <div id="map"></div>
+    <h2 style="text-align:center;">Disaster Response Map</h2>
+
+    <div class="controls">
+        <button onclick="getLocation('requester')">📍 Update Requester Location</button>
+        <button onclick="getLocation('volunteer')">🚑 Update Volunteer Location</button>
     </div>
 
-    <div id="volunteerDashboard" class="dashboard">
-        <h2>Volunteer Dashboard</h2>
-        <p>Available requests:</p>
-        <ul id="requestList"></ul>
-        <div id="map"></div>
-    </div>
+    <div id="map"></div>
 
     <script src="script.js"></script>
+
 </body>
 </html>
