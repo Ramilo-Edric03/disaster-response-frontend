@@ -8,6 +8,19 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 let markers = {}; // Store markers
 let routeLayer;
 
+function selectRole(selectedRole) {
+    document.getElementById("roleSelection").style.display = "none";
+    
+    if (selectedRole === "requester") {
+        document.getElementById("requesterDashboard").style.display = "block";
+    } else if (selectedRole === "volunteer") {
+        document.getElementById("volunteerDashboard").style.display = "block";
+    }
+
+    getLocation(selectedRole);
+}
+
+
 // Listen for location updates
 socket.on("receiveLocation", (locations) => {
     console.log("Received locations:", locations); // Debugging
