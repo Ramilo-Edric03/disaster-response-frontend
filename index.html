@@ -29,47 +29,11 @@
 
     <div id="volunteerDashboard" class="dashboard">
         <h2>Volunteer Dashboard</h2>
-        <p>Available requests will appear here.</p>
+        <p>Available requests will appear here:</p>
         <ul id="requestList"></ul>
         <div id="map"></div>
     </div>
 
-    <script>
-        const socket = io("https://disaster-response-backend.onrender.com");
-        let role = "";
-        let map;
-        
-        function selectRole(selectedRole) {
-            role = selectedRole;
-            document.getElementById("roleSelection").style.display = "none";
-            document.getElementById(role + "Dashboard").style.display = "block";
-            initializeMap();
-            getLocation();
-        }
-
-        function initializeMap() {
-            map = L.map('map').setView([14.0896, 121.1469], 13); // Default to Tanauan, Batangas
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        }
-
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    socket.emit("sendLocation", { role, lat, lng });
-                    L.marker([lat, lng]).addTo(map).bindPopup("You are here").openPopup();
-                });
-            } else {
-                alert("Geolocation is not supported by your browser");
-            }
-        }
-
-        socket.on("receiveLocation", data => {
-            if (data.role !== role) {
-                L.marker([data.lat, data.lng]).addTo(map).bindPopup(`${data.role} Location`).openPopup();
-            }
-        });
-    </script>
+    <script src="script.js"></script> <!-- Link to your separate script file -->
 </body>
 </html>
