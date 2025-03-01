@@ -1,50 +1,83 @@
-// Connect to WebSocket backend
 const socket = io("https://disaster-response-backend.onrender.com/");
 
-// Initialize map
-const map = L.map("map").setView([14.0856, 121.1450], 13); // Default view: Tanauan, Batangas
+let map = L.map("map").setView([14.0856, 121.1450], 13); // Default to Tanauan, Batangas
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-let requesterMarker, volunteerMarker, routeLayer;
+let userRole = "";
+let userMarker;
+let markers = {};
+let routeLayer;
 
-// Listen for location updates
-socket.on("receiveLocation", (data) => {
-    const { role, lat, lng } = data;
+// Select role and initialize dashboard
+function selectRole(role) {
+    userRole = role;
+    document.getElementById("roleSelection").style.display = "none";
+    document.getElementById(role + "Dashboard").style.display = "block";
+    getLocation();
+}
 
-    if (role === "requester") {
-        if (requesterMarker) map.removeLayer(requesterMarker);
-        requesterMarker = L.marker([lat, lng]).addTo(map)
-            .bindPopup("Requester Location").openPopup();
-    } else if (role === "volunteer") {
-        if (volunteerMarker) map.removeLayer(volunteerMarker);
-        volunteerMarker = L.marker([lat, lng]).addTo(map)
-            .bindPopup("Volunteer Location").openPopup();
+// Get user's current location
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            socket.emit("sendLocation", { role: userRole, lat: latitude, lng: longitude });
+
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.marker([latitude, longitude]).addTo(map)
+                .bindPopup("You are here").openPopup();
+
+        }, (error) => console.error("Error getting location:", error));
+    } else {
+        alert("Geolocation is not supported by your browser.");
     }
+}
 
-    // If both locations exist, draw the route
-    if (requesterMarker && volunteerMarker) {
-        drawRoute(requesterMarker.getLatLng(), volunteerMarker.getLatLng());
+// Listen for location updates from the server
+socket.on("receiveLocation", (locations) => {
+    Object.values(markers).forEach(marker => map.removeLayer(marker));
+    markers = {};
+
+    Object.entries(locations).forEach(([id, data]) => {
+        if (!markers[id]) {
+            let marker = L.marker([data.lat, data.lng]).addTo(map)
+                .bindPopup(`${data.role} Location`).openPopup();
+            markers[id] = marker;
+        }
+    });
+
+    // If both a requester and volunteer are present, draw a route
+    const requester = Object.values(locations).find(loc => loc.role === "requester");
+    const volunteer = Object.values(locations).find(loc => loc.role === "volunteer");
+
+    if (requester && volunteer) {
+        drawRoute([requester.lat, requester.lng], [volunteer.lat, volunteer.lng]);
     }
 });
 
-// Function to request and send the user's location
-function getLocation(role) {
-    navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        socket.emit("sendLocation", { role, lat: latitude, lng: longitude });
-    }, (error) => console.error("Error getting location:", error));
+// Request help function
+function sendHelpRequest() {
+    if (!userMarker) return alert("Location not detected!");
+    const { lat, lng } = userMarker.getLatLng();
+    socket.emit("requestHelp", { lat, lng });
 }
 
-// Ask user for their role (requester or volunteer)
-const userRole = prompt("Are you a 'requester' or 'volunteer'?");
-if (userRole === "requester" || userRole === "volunteer") {
-    getLocation(userRole);
-}
+// Listen for new help requests (for volunteers)
+socket.on("newHelpRequest", (requests) => {
+    const requestList = document.getElementById("requestList");
+    requestList.innerHTML = "";
 
-// Function to draw a route between requester & volunteer
+    requests.forEach((request, index) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = `Help requested at (${request.lat}, ${request.lng})`;
+        requestList.appendChild(listItem);
+    });
+});
+
+// Draw route between requester and volunteer
 function drawRoute(start, end) {
-    const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2"; // Replace with your GraphHopper API key
-    const url = `https://graphhopper.com/api/1/route?point=${start.lat},${start.lng}&point=${end.lat},${end.lng}&vehicle=car&locale=en&points_encoded=false&key=${apiKey}`;
+    const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2"; // GraphHopper API Key
+    const url = `https://graphhopper.com/api/1/route?point=${start[0]},${start[1]}&point=${end[0]},${end[1]}&vehicle=car&locale=en&points_encoded=false&key=${apiKey}`;
 
     fetch(url)
         .then(response => response.json())
