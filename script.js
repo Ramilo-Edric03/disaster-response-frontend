@@ -54,6 +54,14 @@ function acceptRequest(lat, lng) {
     });
 }
 
+socket.on("requestAccepted", (data) => {
+    console.log("Requester notified of acceptance:", data);
+    if (userRole === "requester") {
+        document.getElementById("request-status").innerText = "Volunteer is on the way!";
+        drawRoute([data.volunteerLat, data.volunteerLng], [data.lat, data.lng]);
+    }
+});
+
 function drawRoute(start, end) {
     console.log("Drawing route from", start, "to", end);
     const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2";
