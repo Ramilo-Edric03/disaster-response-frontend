@@ -3,81 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Disaster Response System</title>
+    <title>Disaster Response Map</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
     <style>
       body,
       html {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
-        text-align: center;
       }
       #map {
-        height: 60vh;
+        height: 80vh;
         width: 100%;
-        margin-top: 10px;
+        display: none;
       }
-      .dashboard {
-        padding: 20px;
-      }
-      .role-selection button {
-        padding: 15px;
-        font-size: 18px;
-        margin: 10px;
-        cursor: pointer;
-      }
-      .request-list {
-        max-width: 500px;
-        margin: auto;
-        text-align: left;
-      }
-      .request-card {
+      .controls,
+      .role-selection {
+        text-align: center;
         padding: 10px;
-        background: #f8f9fa;
-        margin: 10px 0;
-        border-radius: 5px;
       }
-      button.accept-btn {
-        background: green;
-        color: white;
-        padding: 8px;
-        border: none;
+      button {
+        padding: 10px 15px;
+        font-size: 16px;
         cursor: pointer;
+        margin: 5px;
       }
     </style>
   </head>
   <body>
-    <div class="role-selection">
-      <h2>Choose Your Role</h2>
-      <button onclick="setRole('requester')">
-        <i class="fas fa-user-injured"></i> I Need Help
-      </button>
-      <button onclick="setRole('volunteer')">
-        <i class="fas fa-hands-helping"></i> I Want to Help
-      </button>
+    <div class="role-selection" id="roleSelection">
+      <h2>Select Your Role</h2>
+      <button onclick="selectRole('requester')">I'm a Requester</button>
+      <button onclick="selectRole('volunteer')">I'm a Volunteer</button>
     </div>
 
-    <div class="dashboard" id="requester-dashboard" style="display: none">
-      <h2>Requester Dashboard</h2>
-      <button onclick="requestHelp()">
-        <i class="fas fa-bullhorn"></i> Request Help
-      </button>
-      <p id="request-status">Waiting for volunteer...</p>
+    <div id="mapContainer" style="display: none">
+      <h2 style="text-align: center">Disaster Response Map</h2>
+      <div id="map"></div>
     </div>
 
-    <div class="dashboard" id="volunteer-dashboard" style="display: none">
-      <h2>Volunteer Dashboard</h2>
-      <div class="request-list" id="request-list"></div>
-    </div>
-
-    <div id="map"></div>
     <script src="script.js"></script>
   </body>
 </html>
