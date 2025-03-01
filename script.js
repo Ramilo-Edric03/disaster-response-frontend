@@ -1,5 +1,5 @@
 // Connect to WebSocket backend
-const socket = io("https://disaster-response-backend.onrender.com/"); // Replace with your Render backend URL
+const socket = io("https://disaster-response-backend.onrender.com/");
 
 // Initialize map
 const map = L.map("map").setView([14.0856, 121.1450], 13); // Default view: Tanauan, Batangas
