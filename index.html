@@ -15,11 +15,12 @@
 </head>
 <body>
     <h1>Disaster Response System</h1>
+    
     <div id="roleSelection">
         <button onclick="selectRole('requester')">I Need Help</button>
         <button onclick="selectRole('volunteer')">I Want to Help</button>
     </div>
-    
+
     <div id="requesterDashboard" class="dashboard">
         <h2>Requester Dashboard</h2>
         <p>Your location: <span id="requesterLocation">Detecting...</span></p>
@@ -29,11 +30,11 @@
 
     <div id="volunteerDashboard" class="dashboard">
         <h2>Volunteer Dashboard</h2>
-        <p>Available requests will appear here:</p>
+        <p>Available requests:</p>
         <ul id="requestList"></ul>
         <div id="map"></div>
     </div>
 
-    <script src="script.js"></script> <!-- Link to your separate script file -->
+    <script src="script.js"></script>
 </body>
 </html>
