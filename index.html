@@ -1,31 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Disaster Response Map</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        #map { height: 80vh; width: 100%; }
-        .controls { padding: 10px; text-align: center; }
-        button { padding: 10px 15px; font-size: 16px; cursor: pointer; }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+      #map {
+        height: 80vh;
+        width: 100%;
+      }
+      .controls {
+        padding: 10px;
+        text-align: center;
+      }
+      button {
+        padding: 10px 15px;
+        font-size: 16px;
+        cursor: pointer;
+      }
     </style>
-</head>
-<body>
-
-    <h2 style="text-align:center;">Disaster Response Map</h2>
+  </head>
+  <body>
+    <h2 style="text-align: center">Disaster Response Map</h2>
 
     <div class="controls">
-        <button onclick="getLocation('requester')">📍 Update Requester Location</button>
-        <button onclick="getLocation('volunteer')">🚑 Update Volunteer Location</button>
+      <input
+        type="text"
+        id="landmark"
+        placeholder="Enter landmark (e.g., Tanauan City Hall)"
+      />
+      <button onclick="getLocation('requester')">
+        📍 Use My Location (Requester)
+      </button>
+      <button onclick="getLandmarkLocation('requester')">
+        🔍 Use Landmark (Requester)
+      </button>
+      <button onclick="getLocation('volunteer')">
+        🚑 Use My Location (Volunteer)
+      </button>
+      <button onclick="getLandmarkLocation('volunteer')">
+        🔍 Use Landmark (Volunteer)
+      </button>
     </div>
 
     <div id="map"></div>
 
     <script src="script.js"></script>
-
-</body>
+  </body>
 </html>

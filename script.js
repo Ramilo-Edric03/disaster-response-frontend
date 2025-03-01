@@ -1,4 +1,4 @@
-const socket = io("https://disaster-response-backend.onrender.com/"); // Replace with your Render backend URL
+const socket = io("https://disaster-response-backend.onrender.com/"); // Backend URL
 
 // Initialize map
 const map = L.map("map").setView([14.0856, 121.1450], 13); // Default view: Tanauan, Batangas
@@ -6,7 +6,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
 let requesterMarker, volunteerMarker, routeLayer;
 
-// Listen for location updates
+// Listen for location updates from the server
 socket.on("receiveLocation", (data) => {
     const { role, lat, lng } = data;
 
@@ -20,24 +20,61 @@ socket.on("receiveLocation", (data) => {
             .bindPopup("Volunteer Location").openPopup();
     }
 
-    // If both locations exist, draw the route
+    // Draw route if both locations are available
     if (requesterMarker && volunteerMarker) {
         drawRoute(requesterMarker.getLatLng(), volunteerMarker.getLatLng());
     }
 });
 
-// Function to request and send the user's location
+// Function to get the user's GPS location
 function getLocation(role) {
     navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
         socket.emit("sendLocation", { role, lat: latitude, lng: longitude });
-    }, (error) => console.error("Error getting location:", error));
+    }, (error) => {
+        console.error("Error getting location:", error);
+        alert("Could not get GPS location. Please enter a landmark instead.");
+    });
 }
 
-// Ask user for their role (requester or volunteer)
-const userRole = prompt("Are you a 'requester' or 'volunteer'?");
-if (userRole === "requester" || userRole === "volunteer") {
-    getLocation(userRole);
+// Function to get location by landmark
+function getLandmarkLocation(role) {
+    const landmark = document.getElementById("landmark").value;
+    if (!landmark) {
+        alert("Please enter a landmark.");
+        return;
+    }
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(landmark)}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                alert("Landmark not found! Try another.");
+                return;
+            }
+
+            const { lat, lon } = data[0];
+            socket.emit("sendLocation", { role, lat: parseFloat(lat), lng: parseFloat(lon) });
+
+            // Add marker to map
+            if (role === "requester") {
+                if (requesterMarker) map.removeLayer(requesterMarker);
+                requesterMarker = L.marker([lat, lon]).addTo(map)
+                    .bindPopup("Requester Location (Landmark)").openPopup();
+            } else if (role === "volunteer") {
+                if (volunteerMarker) map.removeLayer(volunteerMarker);
+                volunteerMarker = L.marker([lat, lon]).addTo(map)
+                    .bindPopup("Volunteer Location (Landmark)").openPopup();
+            }
+
+            // Draw route if both locations exist
+            if (requesterMarker && volunteerMarker) {
+                drawRoute(requesterMarker.getLatLng(), volunteerMarker.getLatLng());
+            }
+        })
+        .catch(error => console.error("Error fetching landmark location:", error));
 }
 
 // Function to draw a route between requester & volunteer
