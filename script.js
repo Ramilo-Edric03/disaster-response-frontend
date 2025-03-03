@@ -75,8 +75,14 @@ function fetchRequests() {
             
             requestMarkers.push(marker);
         });
+
+        // Only reset status if the request is still waiting
+        if (userRole === "requester" && document.getElementById("request-status").innerText !== "Volunteer is on the way!") {
+            document.getElementById("request-status").innerText = "Waiting for volunteer...";
+        }
     });
 }
+
 
 function acceptRequest(lat, lng) {
     let locationInput = document.getElementById("volunteer-location-select").value;
@@ -111,9 +117,19 @@ socket.on("requestAccepted", (data) => {
     console.log("Requester notified of acceptance:", data);
     if (userRole === "requester") {
         document.getElementById("request-status").innerText = "Volunteer is on the way!";
+        
+        // Show the route to the requester
         drawRoute([data.volunteerLat, data.volunteerLng], [data.lat, data.lng]);
+
+        // Add a marker for the volunteer on the requester's map
+        if (volunteerLiveMarker) map.removeLayer(volunteerLiveMarker);
+        volunteerLiveMarker = L.marker([data.volunteerLat, data.volunteerLng])
+            .addTo(map)
+            .bindPopup("Volunteer is on the way!")
+            .openPopup();
     }
 });
+
 
 socket.on("updateVolunteerLocation", (data) => {
     console.log("Updating requester map with volunteer location:", data.volunteerLat, data.volunteerLng);
@@ -125,10 +141,15 @@ socket.on("updateVolunteerLocation", (data) => {
         .bindPopup("Volunteer is moving...")
         .openPopup();
 
+    // Ensure the requester sees the updated route
     if (userRole === "requester") {
         drawRoute([data.volunteerLat, data.volunteerLng], [data.requesterLat, data.requesterLng]);
+        
+        // Ensure status stays updated
+        document.getElementById("request-status").innerText = "Volunteer is on the way!";
     }
 });
+
 
 function drawRoute(start, end) {
     const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2";
