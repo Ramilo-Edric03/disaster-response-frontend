@@ -207,3 +207,17 @@ function drawRoute(start, end) {
             alert("Could not fetch route. Please check the location and try again.");
         });
 }
+
+function clearAllRequests() {
+    if (confirm("Are you sure you want to clear all requests? This cannot be undone.")) {
+        socket.emit("clearRequests"); // Send command to backend
+
+        // Remove all request markers from the map
+        requestMarkers.forEach(marker => map.removeLayer(marker));
+        requestMarkers = [];
+
+        // Clear the request list UI
+        document.getElementById("request-list").innerHTML = "";
+    }
+}
+

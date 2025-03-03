@@ -35,6 +35,10 @@
       <button onclick="requestHelpGPS()">Use My Current Location</button>
 
       <p id="request-status">Waiting for volunteer...</p>
+
+      <button onclick="clearAllRequests()" class="clear-btn">
+        Clear All Requests
+      </button>
     </div>
 
     <div class="dashboard" id="volunteer-dashboard" style="display: none">
@@ -46,6 +50,9 @@
       />
       <button onclick="acceptRequestManual()">Submit Location</button>
       <button onclick="acceptRequestGPS()">Use My Current Location</button>
+      <button onclick="clearAllRequests()" class="clear-btn">
+        Clear All Requests
+      </button>
 
       <div class="request-list" id="request-list"></div>
     </div>
