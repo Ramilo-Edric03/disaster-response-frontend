@@ -11,47 +11,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        text-align: center;
-      }
-      #map {
-        height: 60vh;
-        width: 100%;
-        margin-top: 10px;
-      }
-      .dashboard {
-        padding: 20px;
-      }
-      .role-selection button {
-        padding: 15px;
-        font-size: 18px;
-        margin: 10px;
-        cursor: pointer;
-      }
-      .request-list {
-        max-width: 500px;
-        margin: auto;
-        text-align: left;
-      }
-      .request-card {
-        padding: 10px;
-        background: #f8f9fa;
-        margin: 10px 0;
-        border-radius: 5px;
-      }
-      button.accept-btn {
-        background: green;
-        color: white;
-        padding: 8px;
-        border: none;
-        cursor: pointer;
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="role-selection">
@@ -66,6 +26,12 @@
 
     <div class="dashboard" id="requester-dashboard" style="display: none">
       <h2>Requester Dashboard</h2>
+      <select id="location-select">
+        <option value="gps">Use My Current Location</option>
+        <option value="City Hall">City Hall</option>
+        <option value="Hospital">Hospital</option>
+        <option value="Fire Station">Fire Station</option>
+      </select>
       <button onclick="requestHelp()">
         <i class="fas fa-bullhorn"></i> Request Help
       </button>
@@ -74,6 +40,12 @@
 
     <div class="dashboard" id="volunteer-dashboard" style="display: none">
       <h2>Volunteer Dashboard</h2>
+      <select id="volunteer-location-select">
+        <option value="gps">Use My Current Location</option>
+        <option value="City Hall">City Hall</option>
+        <option value="Hospital">Hospital</option>
+        <option value="Fire Station">Fire Station</option>
+      </select>
       <div class="request-list" id="request-list"></div>
     </div>
 
