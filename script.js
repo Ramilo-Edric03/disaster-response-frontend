@@ -1,4 +1,4 @@
-const socket = io("http://localhost:5000"); // Change this if using an online backend
+const socket = io("https://disaster-response-backend.onrender.com"); // Change this if using an online backend
 let userRole;
 let map, requesterMarker, volunteerMarker, volunteerLiveMarker, routeLayer;
 let requestMarkers = []; // Store request markers
