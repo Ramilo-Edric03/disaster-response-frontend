@@ -1,4 +1,4 @@
-const socket = io("https://disaster-response-backend.onrender.com/"); 
+const socket = io("http://localhost:5000"); 
 let userRole;
 let map, requesterMarker, volunteerMarker, volunteerLiveMarker, routeLayer;
 let requestMarkers = []; 
@@ -104,10 +104,10 @@ function fetchRequests() {
 }
 
 // Volunteer submits manual location
-function acceptRequestManual() {
+function acceptRequest(lat, lng, locationName) {
     let locationInput = document.getElementById("volunteer-location-input").value;
     if (!locationInput) {
-        alert("Please enter a location.");
+        alert("Please enter a location or use GPS.");
         return;
     }
 
@@ -116,7 +116,7 @@ function acceptRequestManual() {
         .then(data => {
             if (data.length > 0) {
                 let location = data[0];
-                processVolunteerUpdate(parseFloat(location.lat), parseFloat(location.lon));
+                processVolunteerUpdate(parseFloat(location.lat), parseFloat(location.lon), lat, lng);
             } else {
                 alert("Location not found. Try entering a more specific address.");
             }
@@ -128,9 +128,9 @@ function acceptRequestManual() {
 }
 
 // Volunteer uses GPS location
-function acceptRequestGPS() {
+function acceptRequestGPS(requesterLat, requesterLng) {
     navigator.geolocation.watchPosition((position) => {
-        processVolunteerUpdate(position.coords.latitude, position.coords.longitude);
+        processVolunteerUpdate(position.coords.latitude, position.coords.longitude, requesterLat, requesterLng);
     }, (error) => {
         console.error("Error getting location:", error.message);
         alert("Failed to get GPS location.");
@@ -138,6 +138,12 @@ function acceptRequestGPS() {
 }
 
 function processVolunteerUpdate(volunteerLat, volunteerLng, requesterLat, requesterLng) {
+    if (!requesterLat || !requesterLng) {
+        console.error("Missing requester coordinates! Cannot draw route.");
+        alert("Error: Missing requester location. Try again.");
+        return;
+    }
+
     console.log("Volunteer location updating:", volunteerLat, volunteerLng);
     socket.emit("volunteerLocationUpdate", { volunteerLat, volunteerLng, requesterLat, requesterLng });
 
@@ -175,17 +181,29 @@ socket.on("updateVolunteerLocation", (data) => {
 });
 
 function drawRoute(start, end) {
+    console.log("Drawing route from", start, "to", end);
     const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2";
     const url = `https://graphhopper.com/api/1/route?point=${start[0]},${start[1]}&point=${end[0]},${end[1]}&vehicle=car&locale=en&points_encoded=false&key=${apiKey}`;
 
     fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (routeLayer) map.removeLayer(routeLayer);
-            if (data.paths.length > 0) {
-                routeLayer = L.polyline(data.paths[0].points.coordinates.map(coord => [coord[1], coord[0]]), { color: "blue", weight: 4 }).addTo(map);
-                map.fitBounds(routeLayer.getBounds());
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Invalid response from GraphHopper.");
             }
+            return response.json();
         })
-        .catch(error => console.error("Error fetching route:", error));
+        .then(data => {
+            if (!data.paths || data.paths.length === 0) {
+                throw new Error("No route found.");
+            }
+
+            if (routeLayer) map.removeLayer(routeLayer);
+            const routeCoordinates = data.paths[0].points.coordinates.map(coord => [coord[1], coord[0]]);
+            routeLayer = L.polyline(routeCoordinates, { color: "blue", weight: 4 }).addTo(map);
+            map.fitBounds(routeLayer.getBounds());
+        })
+        .catch(error => {
+            console.error("Error fetching route:", error);
+            alert("Could not fetch route. Please check the location and try again.");
+        });
 }
