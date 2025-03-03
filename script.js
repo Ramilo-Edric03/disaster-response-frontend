@@ -1,4 +1,4 @@
-const socket = io("http://localhost:5000"); 
+const socket = io("https://disaster-response-backend.onrender.com/"); 
 let userRole;
 let map, requesterMarker, volunteerMarker, volunteerLiveMarker, routeLayer;
 let requestMarkers = []; 
