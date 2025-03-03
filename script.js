@@ -129,25 +129,14 @@ function acceptRequest(lat, lng, locationName) {
 
 // Volunteer uses GPS location
 function acceptRequestGPS(requesterLat, requesterLng) {
-    navigator.geolocation.watchPosition((position) => {
+    console.log("Volunteer using GPS location...");
+
+    navigator.geolocation.getCurrentPosition((position) => {
         processVolunteerUpdate(position.coords.latitude, position.coords.longitude, requesterLat, requesterLng);
     }, (error) => {
         console.error("Error getting location:", error.message);
         alert("Failed to get GPS location.");
     });
-}
-
-function processVolunteerUpdate(volunteerLat, volunteerLng, requesterLat, requesterLng) {
-    if (!requesterLat || !requesterLng) {
-        console.error("Missing requester coordinates! Cannot draw route.");
-        alert("Error: Missing requester location. Try again.");
-        return;
-    }
-
-    console.log("Volunteer location updating:", volunteerLat, volunteerLng);
-    socket.emit("volunteerLocationUpdate", { volunteerLat, volunteerLng, requesterLat, requesterLng });
-
-    drawRoute([volunteerLat, volunteerLng], [requesterLat, requesterLng]);
 }
 
 socket.on("requestAccepted", (data) => {
@@ -210,7 +199,7 @@ function drawRoute(start, end) {
 
 function clearAllRequests() {
     if (confirm("Are you sure you want to clear all requests? This cannot be undone.")) {
-        socket.emit("clearRequests"); // Send command to backend
+        socket.emit("clearRequests"); // Tell backend to delete requests
 
         // Remove all request markers from the map
         requestMarkers.forEach(marker => map.removeLayer(marker));
@@ -218,6 +207,12 @@ function clearAllRequests() {
 
         // Clear the request list UI
         document.getElementById("request-list").innerHTML = "";
+
+        // Reset requester status
+        if (userRole === "requester") {
+            document.getElementById("request-status").innerText = "";
+        }
     }
 }
+
 
