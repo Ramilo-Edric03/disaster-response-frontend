@@ -1,6 +1,7 @@
-const socket = io("https://disaster-response-backend.onrender.com"); // Change this if using an online backend
+const socket = io("http://localhost:5000"); // Change this if using an online backend
 let userRole;
-let map, requesterMarker, volunteerMarker, routeLayer;
+let map, requesterMarker, volunteerMarker, volunteerLiveMarker, routeLayer;
+let requestMarkers = []; // Store request markers
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded and parsed.");
@@ -53,19 +54,27 @@ function sendHelpRequest(latitude, longitude, locationName) {
 
 function fetchRequests() {
     socket.on("updateRequests", (requests) => {
+        console.log("Received updated requests:", requests);
+        
         const requestList = document.getElementById("request-list");
         requestList.innerHTML = "";
+
+        // Remove previous request markers
+        requestMarkers.forEach(marker => map.removeLayer(marker));
+        requestMarkers = [];
+
         requests.forEach((req, index) => {
             const div = document.createElement("div");
             div.className = "request-card";
             div.innerHTML = `<p><strong>Requester #${index + 1}</strong><br>Location: ${req.lat}, ${req.lng}</p>
                              <button class='accept-btn' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
             requestList.appendChild(div);
-            
-            // Add a marker for the requester
-            L.marker([req.lat, req.lng])
+
+            let marker = L.marker([req.lat, req.lng])
                 .addTo(map)
                 .bindPopup(`Requester #${index + 1}<br>Location: ${req.lat}, ${req.lng}`);
+            
+            requestMarkers.push(marker);
         });
     });
 }
@@ -74,8 +83,8 @@ function acceptRequest(lat, lng) {
     let locationInput = document.getElementById("volunteer-location-select").value;
 
     if (locationInput === "gps") {
-        navigator.geolocation.getCurrentPosition((position) => {
-            processVolunteerAcceptance(position.coords.latitude, position.coords.longitude, "Your current location", lat, lng);
+        navigator.geolocation.watchPosition((position) => {
+            processVolunteerUpdate(position.coords.latitude, position.coords.longitude, "Your current location", lat, lng);
         }, (error) => {
             console.error("Error getting location:", error.message);
             alert("Failed to get GPS location. Try manual input.");
@@ -88,23 +97,31 @@ function acceptRequest(lat, lng) {
         };
 
         let coordinates = testLocations[locationInput];
-        processVolunteerAcceptance(coordinates[0], coordinates[1], locationInput, lat, lng);
+        processVolunteerUpdate(coordinates[0], coordinates[1], locationInput, lat, lng);
     }
 }
 
-function processVolunteerAcceptance(volunteerLat, volunteerLng, locationName, requesterLat, requesterLng) {
-    console.log("Volunteer location:", volunteerLat, volunteerLng);
+function processVolunteerUpdate(volunteerLat, volunteerLng, locationName, requesterLat, requesterLng) {
+    console.log("Volunteer location updating:", volunteerLat, volunteerLng);
 
-    if (volunteerMarker) map.removeLayer(volunteerMarker);
-    volunteerMarker = L.marker([volunteerLat, volunteerLng])
-        .addTo(map)
-        .bindPopup(`Volunteer at ${locationName}`)
-        .openPopup();
-
-    socket.emit("acceptRequest", { lat: requesterLat, lng: requesterLng, volunteerLat, volunteerLng });
+    // Send the volunteer's location live to the requester
+    socket.emit("volunteerLocationUpdate", { volunteerLat, volunteerLng, requesterLat, requesterLng });
 
     drawRoute([volunteerLat, volunteerLng], [requesterLat, requesterLng]);
 }
+
+socket.on("updateVolunteerLocation", (data) => {
+    console.log("Updating requester map with volunteer location:", data.volunteerLat, data.volunteerLng);
+
+    // Remove old volunteer marker if it exists
+    if (volunteerLiveMarker) map.removeLayer(volunteerLiveMarker);
+
+    // Add a new marker for the updated volunteer location
+    volunteerLiveMarker = L.marker([data.volunteerLat, data.volunteerLng])
+        .addTo(map)
+        .bindPopup("Volunteer is moving...")
+        .openPopup();
+});
 
 function drawRoute(start, end) {
     console.log("Drawing route from", start, "to", end);
@@ -114,20 +131,10 @@ function drawRoute(start, end) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            console.log("Route data received:", data);
-
             if (routeLayer) map.removeLayer(routeLayer);
-
             if (data.paths.length > 0) {
-                const routeCoordinates = data.paths[0].points.coordinates.map(coord => [coord[1], coord[0]]);
-                routeLayer = L.polyline(routeCoordinates, { color: "blue", weight: 4 }).addTo(map);
+                routeLayer = L.polyline(data.paths[0].points.coordinates.map(coord => [coord[1], coord[0]]), { color: "blue", weight: 4 }).addTo(map);
                 map.fitBounds(routeLayer.getBounds());
-
-                // Add markers for start and end of the route
-                L.marker(start).addTo(map).bindPopup("Volunteer Start Location").openPopup();
-                L.marker(end).addTo(map).bindPopup("Requester Location").openPopup();
-            } else {
-                console.error("No route found!");
             }
         })
         .catch(error => console.error("Error fetching route:", error));
