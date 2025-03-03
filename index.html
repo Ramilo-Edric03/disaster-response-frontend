@@ -26,15 +26,13 @@
 
     <div class="dashboard" id="requester-dashboard" style="display: none">
       <h2>Requester Dashboard</h2>
-      <select id="location-select">
-        <option value="gps">Use My Current Location</option>
-        <option value="City Hall">City Hall</option>
-        <option value="Hospital">Hospital</option>
-        <option value="Fire Station">Fire Station</option>
-      </select>
-      <button onclick="requestHelp()">
-        <i class="fas fa-bullhorn"></i> Request Help
-      </button>
+      <input
+        type="text"
+        id="location-input"
+        placeholder="Enter your location or use GPS"
+      />
+      <button onclick="requestHelp()">Request Help</button>
+
       <p id="request-status">Waiting for volunteer...</p>
     </div>
 

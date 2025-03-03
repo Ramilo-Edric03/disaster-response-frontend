@@ -18,44 +18,76 @@ function setRole(role) {
 }
 
 function requestHelp() {
-    let locationInput = document.getElementById("location-select").value;
+    let locationInput = document.getElementById("location-input").value;
 
-    if (locationInput === "gps") {
+    if (!locationInput || locationInput.toLowerCase() === "gps") {
         navigator.geolocation.getCurrentPosition((position) => {
-            sendHelpRequest(position.coords.latitude, position.coords.longitude, "Your current location");
+            sendHelpRequest(position.coords.latitude, position.coords.longitude);
         }, (error) => {
             console.error("Error getting location:", error.message);
-            alert("Failed to get GPS location. Try manual input.");
+            alert("Failed to get GPS location. Please enter your location manually.");
         });
     } else {
-        let testLocations = {
-            "City Hall": [14.5995, 120.9842],
-            "Hospital": [14.5606, 121.0195],
-            "Fire Station": [14.5733, 121.0222]
-        };
-
-        let coordinates = testLocations[locationInput];
-        sendHelpRequest(coordinates[0], coordinates[1], locationInput);
+        // Convert manual input into coordinates
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationInput)}&format=json&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let location = data[0];
+                    sendHelpRequest(parseFloat(location.lat), parseFloat(location.lon), location.display_name);
+                } else {
+                    alert("Location not found. Try entering a more specific address or city name.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching location:", error);
+                alert("Failed to find location. Try again.");
+            });
     }
 }
 
-function sendHelpRequest(latitude, longitude, locationName) {
-    console.log("Requester location:", latitude, longitude);
 
-    if (requesterMarker) map.removeLayer(requesterMarker);
-    requesterMarker = L.marker([latitude, longitude])
-        .addTo(map)
-        .bindPopup(`Requester at ${locationName}`)
-        .openPopup();
+function sendHelpRequest(latitude, longitude) {
+    console.log("Fetching location name for:", latitude, longitude);
 
-    socket.emit("sendRequest", { lat: latitude, lng: longitude });
-    document.getElementById("request-status").innerText = `Request Sent from ${locationName}. Waiting for a volunteer...`;
+    // Reverse geocode using OpenStreetMap's Nominatim API
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+        .then(response => response.json())
+        .then(data => {
+            let locationName = data.display_name || "Unknown Location";
+
+            console.log("Detected location:", locationName);
+
+            // Update UI with readable location
+            if (requesterMarker) map.removeLayer(requesterMarker);
+            requesterMarker = L.marker([latitude, longitude])
+                .addTo(map)
+                .bindPopup(`Requester at ${locationName}`)
+                .openPopup();
+
+            // Send request with readable location name
+            socket.emit("sendRequest", { lat: latitude, lng: longitude, locationName });
+
+            document.getElementById("request-status").innerText = `Request Sent from ${locationName}. Waiting for a volunteer...`;
+        })
+        .catch(error => {
+            console.error("Error fetching location name:", error);
+            sendRequestWithoutName(latitude, longitude);
+        });
 }
+
+// Fallback in case geocoding fails// Fallback in case geocoding fails
+function sendRequestWithoutName(latitude, longitude) {
+    socket.emit("sendRequest", { lat: latitude, lng: longitude, locationName: "Unknown Location" });
+
+    document.getElementById("request-status").innerText = `Request Sent. Waiting for a volunteer...`;
+}
+
 
 function fetchRequests() {
     socket.on("updateRequests", (requests) => {
         console.log("Received updated requests:", requests);
-        
+
         const requestList = document.getElementById("request-list");
         requestList.innerHTML = "";
 
@@ -65,46 +97,49 @@ function fetchRequests() {
         requests.forEach((req, index) => {
             const div = document.createElement("div");
             div.className = "request-card";
-            div.innerHTML = `<p><strong>Requester #${index + 1}</strong><br>Location: ${req.lat}, ${req.lng}</p>
-                             <button class='accept-btn' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
+            div.innerHTML = `<p><strong>Requester #${index + 1}</strong><br>Location: ${req.locationName}</p>
+                             <button class='accept-btn' onclick='acceptRequest(${req.lat}, ${req.lng}, "${req.locationName}")'>Accept</button>`;
             requestList.appendChild(div);
 
             let marker = L.marker([req.lat, req.lng])
                 .addTo(map)
-                .bindPopup(`Requester #${index + 1}<br>Location: ${req.lat}, ${req.lng}`);
+                .bindPopup(`Requester #${index + 1}<br>${req.locationName}`);
             
             requestMarkers.push(marker);
         });
-
-        // Only reset status if the request is still waiting
-        if (userRole === "requester" && document.getElementById("request-status").innerText !== "Volunteer is on the way!") {
-            document.getElementById("request-status").innerText = "Waiting for volunteer...";
-        }
     });
 }
 
 
-function acceptRequest(lat, lng) {
-    let locationInput = document.getElementById("volunteer-location-select").value;
 
-    if (locationInput === "gps") {
+function acceptRequest(lat, lng, locationName) {
+    let locationInput = document.getElementById("volunteer-location-input").value;
+
+    if (!locationInput || locationInput.toLowerCase() === "gps") {
         navigator.geolocation.watchPosition((position) => {
-            processVolunteerUpdate(position.coords.latitude, position.coords.longitude, lat, lng);
+            processVolunteerUpdate(position.coords.latitude, position.coords.longitude, lat, lng, locationName);
         }, (error) => {
             console.error("Error getting location:", error.message);
-            alert("Failed to get GPS location. Try manual input.");
+            alert("Failed to get GPS location. Please enter your location manually.");
         });
     } else {
-        let testLocations = {
-            "City Hall": [14.5995, 120.9842],
-            "Hospital": [14.5606, 121.0195],
-            "Fire Station": [14.5733, 121.0222]
-        };
-
-        let coordinates = testLocations[locationInput];
-        processVolunteerUpdate(coordinates[0], coordinates[1], lat, lng);
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationInput)}&format=json&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let location = data[0];
+                    processVolunteerUpdate(parseFloat(location.lat), parseFloat(location.lon), lat, lng, locationName);
+                } else {
+                    alert("Location not found. Try entering a more specific address or city name.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching location:", error);
+                alert("Failed to find location. Try again.");
+            });
     }
 }
+
 
 function processVolunteerUpdate(volunteerLat, volunteerLng, requesterLat, requesterLng) {
     console.log("Volunteer location updating:", volunteerLat, volunteerLng);
