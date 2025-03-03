@@ -1,7 +1,7 @@
-const socket = io("https://disaster-response-backend.onrender.com"); // Change this if using an online backend
+const socket = io("https://disaster-response-backend.onrender.com/"); 
 let userRole;
 let map, requesterMarker, volunteerMarker, volunteerLiveMarker, routeLayer;
-let requestMarkers = []; // Store request markers
+let requestMarkers = []; 
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded and parsed.");
@@ -59,7 +59,6 @@ function fetchRequests() {
         const requestList = document.getElementById("request-list");
         requestList.innerHTML = "";
 
-        // Remove previous request markers
         requestMarkers.forEach(marker => map.removeLayer(marker));
         requestMarkers = [];
 
@@ -84,7 +83,7 @@ function acceptRequest(lat, lng) {
 
     if (locationInput === "gps") {
         navigator.geolocation.watchPosition((position) => {
-            processVolunteerUpdate(position.coords.latitude, position.coords.longitude, "Your current location", lat, lng);
+            processVolunteerUpdate(position.coords.latitude, position.coords.longitude, lat, lng);
         }, (error) => {
             console.error("Error getting location:", error.message);
             alert("Failed to get GPS location. Try manual input.");
@@ -97,34 +96,41 @@ function acceptRequest(lat, lng) {
         };
 
         let coordinates = testLocations[locationInput];
-        processVolunteerUpdate(coordinates[0], coordinates[1], locationInput, lat, lng);
+        processVolunteerUpdate(coordinates[0], coordinates[1], lat, lng);
     }
 }
 
-function processVolunteerUpdate(volunteerLat, volunteerLng, locationName, requesterLat, requesterLng) {
+function processVolunteerUpdate(volunteerLat, volunteerLng, requesterLat, requesterLng) {
     console.log("Volunteer location updating:", volunteerLat, volunteerLng);
-
-    // Send the volunteer's location live to the requester
     socket.emit("volunteerLocationUpdate", { volunteerLat, volunteerLng, requesterLat, requesterLng });
 
     drawRoute([volunteerLat, volunteerLng], [requesterLat, requesterLng]);
 }
 
+socket.on("requestAccepted", (data) => {
+    console.log("Requester notified of acceptance:", data);
+    if (userRole === "requester") {
+        document.getElementById("request-status").innerText = "Volunteer is on the way!";
+        drawRoute([data.volunteerLat, data.volunteerLng], [data.lat, data.lng]);
+    }
+});
+
 socket.on("updateVolunteerLocation", (data) => {
     console.log("Updating requester map with volunteer location:", data.volunteerLat, data.volunteerLng);
 
-    // Remove old volunteer marker if it exists
     if (volunteerLiveMarker) map.removeLayer(volunteerLiveMarker);
 
-    // Add a new marker for the updated volunteer location
     volunteerLiveMarker = L.marker([data.volunteerLat, data.volunteerLng])
         .addTo(map)
         .bindPopup("Volunteer is moving...")
         .openPopup();
+
+    if (userRole === "requester") {
+        drawRoute([data.volunteerLat, data.volunteerLng], [data.requesterLat, data.requesterLng]);
+    }
 });
 
 function drawRoute(start, end) {
-    console.log("Drawing route from", start, "to", end);
     const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2";
     const url = `https://graphhopper.com/api/1/route?point=${start[0]},${start[1]}&point=${end[0]},${end[1]}&vehicle=car&locale=en&points_encoded=false&key=${apiKey}`;
 
