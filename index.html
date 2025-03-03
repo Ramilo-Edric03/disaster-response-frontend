@@ -28,22 +28,25 @@
       <h2>Requester Dashboard</h2>
       <input
         type="text"
-        id="location-input"
-        placeholder="Enter your location or use GPS"
+        id="requester-location-input"
+        placeholder="Enter your location manually"
       />
-      <button onclick="requestHelp()">Request Help</button>
+      <button onclick="requestHelpManual()">Submit Location</button>
+      <button onclick="requestHelpGPS()">Use My Current Location</button>
 
       <p id="request-status">Waiting for volunteer...</p>
     </div>
 
     <div class="dashboard" id="volunteer-dashboard" style="display: none">
       <h2>Volunteer Dashboard</h2>
-      <select id="volunteer-location-select">
-        <option value="gps">Use My Current Location</option>
-        <option value="City Hall">City Hall</option>
-        <option value="Hospital">Hospital</option>
-        <option value="Fire Station">Fire Station</option>
-      </select>
+      <input
+        type="text"
+        id="volunteer-location-input"
+        placeholder="Enter your location manually"
+      />
+      <button onclick="acceptRequestManual()">Submit Location</button>
+      <button onclick="acceptRequestGPS()">Use My Current Location</button>
+
       <div class="request-list" id="request-list"></div>
     </div>
 
