@@ -173,20 +173,31 @@ function setVolunteerLocationGPS() {
 
 function fetchRequests() {
     socket.on("updateRequests", (requests) => {
-        document.getElementById("request-list").innerHTML = "";
-        requestMarkers.forEach(marker => map.removeLayer(marker));
+        console.log("Received updated requests:", requests);
+
+        const requestList = document.getElementById("request-list");
+        requestList.innerHTML = ""; // Clear previous requests
+
+        requestMarkers.forEach(marker => map.removeLayer(marker)); // Remove old markers
         requestMarkers = [];
 
         requests.forEach((req, index) => {
-            let div = document.createElement("div");
+            const div = document.createElement("div");
             div.className = "request-card";
             div.innerHTML = `<p><strong>Requester #${index + 1}</strong><br>Location: ${req.locationName}</p>
                              <button class='accept-btn' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
-            document.getElementById("request-list").appendChild(div);
-            let marker = L.marker([req.lat, req.lng]).addTo(map).bindPopup(req.locationName);
+            requestList.appendChild(div);
+
+            let marker = L.marker([req.lat, req.lng])
+                .addTo(map)
+                .bindPopup(`Requester #${index + 1}<br>${req.locationName}`);
+            
             requestMarkers.push(marker);
         });
     });
+
+    // Manually request existing requests when a volunteer joins
+    socket.emit("getRequests");
 }
 
 function clearAllRequests() {
