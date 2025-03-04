@@ -139,6 +139,45 @@ function acceptRequestGPS(requesterLat, requesterLng) {
     });
 }
 
+
+function acceptRequestManual(requesterLat, requesterLng) {
+    let locationInput = document.getElementById("volunteer-location-input").value;
+    if (!locationInput) {
+        alert("Please enter a location.");
+        return;
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationInput)}&format=json&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                let location = data[0];
+                processVolunteerUpdate(parseFloat(location.lat), parseFloat(location.lon), requesterLat, requesterLng);
+            } else {
+                alert("Location not found. Try entering a more specific address.");
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching location:", error);
+            alert("Failed to find location. Try again.");
+        });
+}
+
+function processVolunteerUpdate(volunteerLat, volunteerLng, requesterLat, requesterLng) {
+    if (!requesterLat || !requesterLng) {
+        console.error("Missing requester coordinates! Cannot draw route.");
+        alert("Error: Missing requester location. Try again.");
+        return;
+    }
+
+    console.log("Volunteer location updating:", volunteerLat, volunteerLng);
+    socket.emit("volunteerLocationUpdate", { volunteerLat, volunteerLng, requesterLat, requesterLng });
+
+    drawRoute([volunteerLat, volunteerLng], [requesterLat, requesterLng]);
+}
+
+
+
 socket.on("requestAccepted", (data) => {
     console.log("Requester notified of acceptance:", data);
     if (userRole === "requester") {
