@@ -14,11 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
 function setRole(role) {
     console.log("User selected role:", role);
     userRole = role;
-    document.querySelector("button[onclick='setRole(\"requester\")']").style.display = "none";
-    document.querySelector("button[onclick='setRole(\"volunteer\")']").style.display = "none";
+
+    // Hide the role selection buttons
+    document.querySelectorAll("button").forEach(button => {
+        if (button.innerText.includes("I Need Help") || button.innerText.includes("I Want to Help")) {
+            button.style.display = "none";
+        }
+    });
+
+    // Show the selected dashboard
     document.getElementById(`${role}-dashboard`).style.display = "block";
+
     if (role === "volunteer") fetchRequests();
 }
+
 
 function requestHelp() {
     if (requesterLat === null || requesterLng === null) {
