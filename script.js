@@ -109,6 +109,39 @@ function acceptRequest(lat, lng) {
     processVolunteerUpdate(volunteerLat, volunteerLng, lat, lng);
 }
 
+let volunteerWatchID = null; // To store GPS tracking instance
+
+function acceptRequestGPS(requesterLat, requesterLng) {
+    console.log("Volunteer using GPS location...");
+
+    if (volunteerWatchID !== null) {
+        navigator.geolocation.clearWatch(volunteerWatchID); // Clear any previous tracking
+    }
+
+    volunteerWatchID = navigator.geolocation.watchPosition((position) => {
+        volunteerLat = position.coords.latitude;
+        volunteerLng = position.coords.longitude;
+
+        console.log("Live location update:", volunteerLat, volunteerLng);
+
+        // Send live location to server
+        socket.emit("volunteerLocationUpdate", { 
+            volunteerLat, 
+            volunteerLng, 
+            requesterLat, 
+            requesterLng 
+        });
+
+        // Update route dynamically
+        drawRoute([volunteerLat, volunteerLng], [requesterLat, requesterLng]);
+
+    }, (error) => {
+        console.error("Error getting location:", error.message);
+        alert("Failed to get live GPS location.");
+    }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 });
+}
+
+
 function setVolunteerLocationManual() {
     let locationInput = document.getElementById("volunteer-location-input").value;
     if (!locationInput) {
@@ -183,18 +216,24 @@ function processVolunteerUpdate(volunteerLat, volunteerLng, requesterLat, reques
 socket.on("updateVolunteerLocation", (data) => {
     console.log("Updating requester map with volunteer location:", data.volunteerLat, data.volunteerLng);
 
-    if (volunteerLiveMarker) map.removeLayer(volunteerLiveMarker);
+    if (!volunteerLiveMarker) {
+        // First-time marker placement
+        volunteerLiveMarker = L.marker([data.volunteerLat, data.volunteerLng])
+            .addTo(map)
+            .bindPopup("Volunteer is moving...");
+    } else {
+        // Smoothly move marker
+        volunteerLiveMarker.setLatLng([data.volunteerLat, data.volunteerLng]);
+    }
 
-    volunteerLiveMarker = L.marker([data.volunteerLat, data.volunteerLng])
-        .addTo(map)
-        .bindPopup("Volunteer is moving...")
-        .openPopup();
-
+    // Update the route dynamically for the requester
     if (userRole === "requester") {
         drawRoute([data.volunteerLat, data.volunteerLng], [data.requesterLat, data.requesterLng]);
         document.getElementById("request-status").innerText = "Volunteer is on the way!";
     }
 });
+
+
 
 function drawRoute(start, end) {
     console.log("Drawing route from", start, "to", end);
