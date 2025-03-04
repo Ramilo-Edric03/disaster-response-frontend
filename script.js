@@ -171,31 +171,64 @@ function setVolunteerLocationGPS() {
     }, (error) => alert("Failed to get GPS location."));
 }
 
+let currentPage = 1;
+const itemsPerPage = 5;
+let allRequests = [];
+
 function fetchRequests() {
     socket.on("updateRequests", (requests) => {
         console.log("Received updated requests:", requests);
-
-        const requestList = document.getElementById("request-list");
-        requestList.innerHTML = ""; // Clear previous requests
-
-        requestMarkers.forEach(marker => map.removeLayer(marker)); // Remove old markers
-        requestMarkers = [];
-
-        requests.forEach((req, index) => {
-            const div = document.createElement("div");
-            div.className = "request-card";
-            div.innerHTML = `<p><strong>Requester #${index + 1}</strong><br>Location: ${req.locationName}</p>
-                             <button class='accept-btn w-1/2 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
-            requestList.appendChild(div);
-
-            let marker = L.marker([req.lat, req.lng])
-                .addTo(map)
-                .bindPopup(`Requester #${index + 1}<br>${req.locationName}`);
-            
-            requestMarkers.push(marker);
-        });
+        allRequests = requests;
+        currentPage = 1;
+        displayRequests();
     });
 }
+
+function displayRequests() {
+    const requestList = document.getElementById("request-list");
+    requestList.innerHTML = ""; // Clear previous requests
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedRequests = allRequests.slice(startIndex, endIndex);
+
+    paginatedRequests.forEach((req, index) => {
+        const div = document.createElement("div");
+        div.className = "bg-gray-100 p-4 rounded-lg shadow-md";
+        div.innerHTML = `<p><strong>Requester #${startIndex + index + 1}</strong><br>Location: ${req.locationName}</p>
+                         <button class='bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
+        requestList.appendChild(div);
+    });
+
+    updatePaginationControls();
+}
+
+function updatePaginationControls() {
+    const totalPages = Math.ceil(allRequests.length / itemsPerPage);
+    document.getElementById("page-number").innerText = `Page ${currentPage} of ${totalPages}`;
+
+    const prevButton = document.getElementById("prev-page");
+    const nextButton = document.getElementById("next-page");
+
+    prevButton.style.display = currentPage > 1 ? "block" : "none";
+    nextButton.style.display = currentPage < totalPages ? "block" : "none";
+}
+
+document.getElementById("prev-page").addEventListener("click", () => {
+    if (currentPage > 1) {
+        currentPage--;
+        displayRequests();
+    }
+});
+
+document.getElementById("next-page").addEventListener("click", () => {
+    const totalPages = Math.ceil(allRequests.length / itemsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayRequests();
+    }
+});
+
 
 function clearAllRequests() {
     if (confirm("Are you sure you want to clear all requests?")) {

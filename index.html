@@ -30,112 +30,81 @@
     </div>
 
     <div
-      id="requester-dashboard"
-      class="w-full max-w-md bg-white p-6 rounded-lg shadow-md mt-6 hidden"
+      id="dashboard"
+      class="w-full max-w-7xl bg-white p-6 rounded-lg shadow-md mt-6 hidden"
     >
-      <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
-      <div class="flex gap-2">
+      <div id="requester-dashboard" class="hidden">
+        <h3 class="text-2xl font-semibold mb-2">Set Your Location</h3>
+        <div class="flex gap-2">
+          <button
+            onclick="enableRequesterPin()"
+            class="w-1/2 bg-gray-200 py-2 px-4 rounded-lg hover:bg-gray-300"
+          >
+            Select on Map
+          </button>
+          <button
+            onclick="setRequesterLocationGPS()"
+            class="w-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+          >
+            Use GPS
+          </button>
+        </div>
+        <input
+          type="text"
+          id="requester-location-input"
+          placeholder="Enter manually"
+          class="w-full border p-2 rounded-lg mt-2"
+        />
         <button
-          onclick="enableRequesterPin()"
-          class="w-1/2 bg-gray-200 py-2 px-4 rounded-lg hover:bg-gray-300"
+          onclick="setRequesterLocationManual()"
+          class="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 mt-2"
         >
-          Select on Map
+          Submit Location
         </button>
+        <h3 class="text-xl font-semibold mt-4">Request Help</h3>
         <button
-          onclick="setRequesterLocationGPS()"
-          class="w-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+          id="request-help-btn"
+          onclick="requestHelp()"
+          class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-2"
+          disabled
         >
-          Use GPS
+          Request Help
+        </button>
+        <p id="request-status" class="text-gray-600 mt-2">
+          Set your location first.
+        </p>
+      </div>
+
+      <div id="volunteer-dashboard" class="hidden">
+        <h3 class="text-2xl font-semibold mb-2">Available Requests</h3>
+        <div id="request-list" class="space-y-2"></div>
+        <div id="pagination-controls" class="flex justify-between mt-4">
+          <button
+            id="prev-page"
+            class="bg-gray-400 text-white px-4 py-2 rounded-lg hidden"
+          >
+            Previous
+          </button>
+          <span id="page-number" class="text-gray-600"></span>
+          <button
+            id="next-page"
+            class="bg-gray-400 text-white px-4 py-2 rounded-lg hidden"
+          >
+            Next
+          </button>
+        </div>
+        <button
+          onclick="clearAllRequests()"
+          class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-4"
+        >
+          Clear All Requests
         </button>
       </div>
-      <button
-        onclick="confirmRequesterLocation()"
-        id="confirm-requester-btn"
-        class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2 hidden"
-      >
-        Confirm Location
-      </button>
-
-      <input
-        type="text"
-        id="requester-location-input"
-        placeholder="Enter location manually"
-        class="w-full border p-2 rounded-lg mt-2"
-      />
-      <button
-        onclick="setRequesterLocationManual()"
-        class="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 mt-2"
-      >
-        Submit Location
-      </button>
-
-      <h3 class="text-xl font-semibold mt-4">Request Help</h3>
-      <button
-        id="request-help-btn"
-        onclick="requestHelp()"
-        class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-2"
-        disabled
-      >
-        Request Help
-      </button>
-      <p id="request-status" class="text-gray-600 mt-2">
-        Set your location first.
-      </p>
-    </div>
-
-    <div
-      id="volunteer-dashboard"
-      class="w-full max-w-md bg-white p-6 rounded-lg shadow-md mt-6 hidden"
-    >
-      <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
-      <div class="flex gap-2">
-        <button
-          onclick="enableVolunteerPin()"
-          class="w-1/2 bg-gray-200 py-2 px-4 rounded-lg hover:bg-gray-300"
-        >
-          Select on Map
-        </button>
-        <button
-          onclick="setVolunteerLocationGPS()"
-          class="w-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-        >
-          Use GPS
-        </button>
-      </div>
-      <button
-        onclick="confirmVolunteerLocation()"
-        id="confirm-volunteer-btn"
-        class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2 hidden"
-      >
-        Confirm Location
-      </button>
-
-      <input
-        type="text"
-        id="volunteer-location-input"
-        placeholder="Enter location manually"
-        class="w-full border p-2 rounded-lg mt-2"
-      />
-      <button
-        onclick="setVolunteerLocationManual()"
-        class="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 mt-2"
-      >
-        Submit Location
-      </button>
-
-      <h3 class="text-xl font-semibold mt-4">Available Requests</h3>
-      <div id="request-list" class="space-y-2"></div>
-      <button
-        onclick="clearAllRequests()"
-        class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-4"
-      >
-        Clear All Requests
-      </button>
     </div>
 
     <div
       id="map"
-      class="w-full h-[60vh] max-w-4xl mt-6 rounded-lg shadow-md"
+      class="w-full h-[60vh] max-w-7xl mt-6 rounded-lg shadow-md"
     ></div>
 
     <script src="script.js"></script>
