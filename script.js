@@ -15,14 +15,11 @@ function setRole(role) {
     console.log("User selected role:", role);
     userRole = role;
 
-    // Hide the role selection buttons safely
-    let requesterBtn = document.querySelector("button[onclick=\"setRole('requester')\"]");
-    let volunteerBtn = document.querySelector("button[onclick=\"setRole('volunteer')\"]");
+    // Hide role selection section
+    let roleSelectionButtons = document.querySelectorAll(".role-selection");
+    roleSelectionButtons.forEach(button => button.style.display = "none");
 
-    if (requesterBtn) requesterBtn.style.display = "none";
-    if (volunteerBtn) volunteerBtn.style.display = "none";
-
-    // Ensure the dashboard exists before showing it
+    // Show the appropriate dashboard
     let dashboard = document.getElementById(`${role}-dashboard`);
     if (dashboard) {
         dashboard.style.display = "block";
@@ -32,6 +29,7 @@ function setRole(role) {
 
     if (role === "volunteer") fetchRequests();
 }
+
 
 
 function requestHelp() {
@@ -165,10 +163,33 @@ function clearAllRequests() {
 }
 
 function processVolunteerUpdate(volunteerLat, volunteerLng, requesterLat, requesterLng) {
+    if (!requesterLat || !requesterLng) {
+        console.error("Missing requester coordinates! Cannot draw route.");
+        alert("Error: Missing requester location. Try again.");
+        return;
+    }
+
+    console.log("Volunteer location updating:", volunteerLat, volunteerLng);
     socket.emit("volunteerLocationUpdate", { volunteerLat, volunteerLng, requesterLat, requesterLng });
+
+    // Draw the route
+    drawRoute([volunteerLat, volunteerLng], [requesterLat, requesterLng]);
 }
 
+
 socket.on("updateVolunteerLocation", (data) => {
+    console.log("Updating requester map with volunteer location:", data.volunteerLat, data.volunteerLng);
+
     if (volunteerLiveMarker) map.removeLayer(volunteerLiveMarker);
-    volunteerLiveMarker = L.marker([data.volunteerLat, data.volunteerLng]).addTo(map).bindPopup("Volunteer is moving...");
+
+    volunteerLiveMarker = L.marker([data.volunteerLat, data.volunteerLng])
+        .addTo(map)
+        .bindPopup("Volunteer is moving...")
+        .openPopup();
+
+    if (userRole === "requester") {
+        drawRoute([data.volunteerLat, data.volunteerLng], [data.requesterLat, data.requesterLng]);
+        document.getElementById("request-status").innerText = "Volunteer is on the way!";
+    }
 });
+
