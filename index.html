@@ -7,63 +7,120 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <div id="role-selection">
-      <h2>Choose Your Role</h2>
-      <button onclick="setRole('requester')">I Need Help</button>
-      <button onclick="setRole('volunteer')">I Want to Help</button>
+  <body class="bg-gray-100 flex flex-col items-center p-4">
+    <div
+      id="role-selection"
+      class="w-full max-w-md bg-white p-6 rounded-lg shadow-md text-center"
+    >
+      <h2 class="text-2xl font-bold mb-4">Choose Your Role</h2>
+      <button
+        onclick="setRole('requester')"
+        class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 mb-2"
+      >
+        I Need Help
+      </button>
+      <button
+        onclick="setRole('volunteer')"
+        class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
+      >
+        I Want to Help
+      </button>
     </div>
 
-    <div id="requester-dashboard" style="display: none">
-      <h3>Set Your Location</h3>
-      <button onclick="enableRequesterPin()">
-        Set Location by Clicking on Map
-      </button>
-      <button onclick="confirmRequesterLocation()">Confirm Location</button>
+    <div
+      id="requester-dashboard"
+      class="w-full max-w-md bg-white p-6 rounded-lg shadow-md mt-6 hidden"
+    >
+      <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
+      <div class="flex gap-2">
+        <button
+          onclick="enableRequesterPin()"
+          class="w-1/2 bg-gray-200 py-2 px-4 rounded-lg hover:bg-gray-300"
+        >
+          Select on Map
+        </button>
+        <button
+          onclick="setRequesterLocationGPS()"
+          class="w-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+        >
+          Use GPS
+        </button>
+      </div>
       <input
         type="text"
         id="requester-location-input"
-        placeholder="Enter your location manually"
+        placeholder="Enter location manually"
+        class="w-full border p-2 rounded-lg mt-2"
       />
-      <button onclick="setRequesterLocationManual()">Submit Location</button>
-      <button onclick="setRequesterLocationGPS()">
-        Use My Current Location
+      <button
+        onclick="setRequesterLocationManual()"
+        class="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 mt-2"
+      >
+        Submit Location
       </button>
 
-      <h3>Request Help</h3>
-      <button id="request-help-btn" onclick="requestHelp()" disabled>
+      <h3 class="text-xl font-semibold mt-4">Request Help</h3>
+      <button
+        id="request-help-btn"
+        onclick="requestHelp()"
+        class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-2"
+        disabled
+      >
         Request Help
       </button>
-      <p id="request-status">Set your location first.</p>
+      <p id="request-status" class="text-gray-600 mt-2">
+        Set your location first.
+      </p>
     </div>
 
-    <div id="volunteer-dashboard" style="display: none">
-      <h3>Set Your Location</h3>
-      <button onclick="enableVolunteerPin()">
-        Set Location by Clicking on Map
-      </button>
-      <button onclick="confirmVolunteerLocation()">Confirm Location</button>
+    <div
+      id="volunteer-dashboard"
+      class="w-full max-w-md bg-white p-6 rounded-lg shadow-md mt-6 hidden"
+    >
+      <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
+      <div class="flex gap-2">
+        <button
+          onclick="enableVolunteerPin()"
+          class="w-1/2 bg-gray-200 py-2 px-4 rounded-lg hover:bg-gray-300"
+        >
+          Select on Map
+        </button>
+        <button
+          onclick="setVolunteerLocationGPS()"
+          class="w-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+        >
+          Use GPS
+        </button>
+      </div>
       <input
         type="text"
         id="volunteer-location-input"
-        placeholder="Enter your location manually"
+        placeholder="Enter location manually"
+        class="w-full border p-2 rounded-lg mt-2"
       />
-      <button onclick="setVolunteerLocationManual()">Submit Location</button>
-      <button onclick="setVolunteerLocationGPS()">
-        Use My Current Location
+      <button
+        onclick="setVolunteerLocationManual()"
+        class="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 mt-2"
+      >
+        Submit Location
       </button>
 
-      <h3>Available Requests</h3>
-      <div class="request-list" id="request-list"></div>
-
-      <button onclick="clearAllRequests()" class="clear-btn">
+      <h3 class="text-xl font-semibold mt-4">Available Requests</h3>
+      <div id="request-list" class="space-y-2"></div>
+      <button
+        onclick="clearAllRequests()"
+        class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 mt-4"
+      >
         Clear All Requests
       </button>
     </div>
 
-    <div id="map" style="height: 60vh"></div>
+    <div
+      id="map"
+      class="w-full h-[60vh] max-w-4xl mt-6 rounded-lg shadow-md"
+    ></div>
 
     <script src="script.js"></script>
   </body>
