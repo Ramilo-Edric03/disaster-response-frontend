@@ -15,11 +15,13 @@ function setRole(role) {
     console.log("User selected role:", role);
     userRole = role;
 
-    // Hide role selection section
-    let roleSelectionButtons = document.querySelectorAll(".role-selection");
-    roleSelectionButtons.forEach(button => button.style.display = "none");
+    // Hide the entire role selection section
+    let roleSelectionDiv = document.getElementById("role-selection");
+    if (roleSelectionDiv) {
+        roleSelectionDiv.style.display = "none";
+    }
 
-    // Show the appropriate dashboard
+    // Show the correct dashboard
     let dashboard = document.getElementById(`${role}-dashboard`);
     if (dashboard) {
         dashboard.style.display = "block";
@@ -29,6 +31,7 @@ function setRole(role) {
 
     if (role === "volunteer") fetchRequests();
 }
+
 
 
 

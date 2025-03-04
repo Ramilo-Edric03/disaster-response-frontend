@@ -10,9 +10,11 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h2>Choose Your Role</h2>
-    <button onclick="setRole('requester')">I Need Help</button>
-    <button onclick="setRole('volunteer')">I Want to Help</button>
+    <div id="role-selection">
+      <h2>Choose Your Role</h2>
+      <button onclick="setRole('requester')">I Need Help</button>
+      <button onclick="setRole('volunteer')">I Want to Help</button>
+    </div>
 
     <div id="requester-dashboard" style="display: none">
       <h3>Set Your Location</h3>
