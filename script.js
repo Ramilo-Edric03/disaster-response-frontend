@@ -15,15 +15,20 @@ function setRole(role) {
     console.log("User selected role:", role);
     userRole = role;
 
-    // Hide the role selection buttons
-    document.querySelectorAll("button").forEach(button => {
-        if (button.innerText.includes("I Need Help") || button.innerText.includes("I Want to Help")) {
-            button.style.display = "none";
-        }
-    });
+    // Hide the role selection buttons safely
+    let requesterBtn = document.querySelector("button[onclick=\"setRole('requester')\"]");
+    let volunteerBtn = document.querySelector("button[onclick=\"setRole('volunteer')\"]");
 
-    // Show the selected dashboard
-    document.getElementById(`${role}-dashboard`).style.display = "block";
+    if (requesterBtn) requesterBtn.style.display = "none";
+    if (volunteerBtn) volunteerBtn.style.display = "none";
+
+    // Ensure the dashboard exists before showing it
+    let dashboard = document.getElementById(`${role}-dashboard`);
+    if (dashboard) {
+        dashboard.style.display = "block";
+    } else {
+        console.error(`Dashboard for role "${role}" not found.`);
+    }
 
     if (role === "volunteer") fetchRequests();
 }
