@@ -185,7 +185,7 @@ function fetchRequests() {
             const div = document.createElement("div");
             div.className = "request-card";
             div.innerHTML = `<p><strong>Requester #${index + 1}</strong><br>Location: ${req.locationName}</p>
-                             <button class='accept-btn' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
+                             <button class='accept-btn w-1/2 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
             requestList.appendChild(div);
 
             let marker = L.marker([req.lat, req.lng])
