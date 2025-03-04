@@ -7,57 +7,54 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="role-selection">
-      <h2>Choose Your Role</h2>
-      <button onclick="setRole('requester')">
-        <i class="fas fa-user-injured"></i> I Need Help
-      </button>
-      <button onclick="setRole('volunteer')">
-        <i class="fas fa-hands-helping"></i> I Want to Help
-      </button>
-    </div>
+    <h2>Choose Your Role</h2>
+    <button onclick="setRole('requester')">I Need Help</button>
+    <button onclick="setRole('volunteer')">I Want to Help</button>
 
-    <div class="dashboard" id="requester-dashboard" style="display: none">
-      <h2>Requester Dashboard</h2>
+    <div id="requester-dashboard" style="display: none">
+      <h3>Set Your Location</h3>
       <input
         type="text"
         id="requester-location-input"
         placeholder="Enter your location manually"
       />
-      <button onclick="requestHelpManual()">Submit Location</button>
-      <button onclick="requestHelpGPS()">Use My Current Location</button>
-
-      <p id="request-status">Waiting for volunteer...</p>
-
-      <button onclick="clearAllRequests()" class="clear-btn">
-        Clear All Requests
+      <button onclick="setRequesterLocationManual()">Submit Location</button>
+      <button onclick="setRequesterLocationGPS()">
+        Use My Current Location
       </button>
+
+      <h3>Request Help</h3>
+      <button id="request-help-btn" onclick="requestHelp()" disabled>
+        Request Help
+      </button>
+      <p id="request-status">Set your location first.</p>
     </div>
 
-    <div class="dashboard" id="volunteer-dashboard" style="display: none">
-      <h2>Volunteer Dashboard</h2>
+    <div id="volunteer-dashboard" style="display: none">
+      <h3>Set Your Location</h3>
       <input
         type="text"
         id="volunteer-location-input"
         placeholder="Enter your location manually"
       />
-      <button onclick="acceptRequestManual()">Submit Location</button>
-      <button onclick="acceptRequestGPS()">Use My Current Location</button>
+      <button onclick="setVolunteerLocationManual()">Submit Location</button>
+      <button onclick="setVolunteerLocationGPS()">
+        Use My Current Location
+      </button>
+
+      <h3>Available Requests</h3>
+      <div class="request-list" id="request-list"></div>
+
       <button onclick="clearAllRequests()" class="clear-btn">
         Clear All Requests
       </button>
-
-      <div class="request-list" id="request-list"></div>
     </div>
 
-    <div id="map"></div>
+    <div id="map" style="height: 60vh"></div>
+
     <script src="script.js"></script>
   </body>
 </html>
