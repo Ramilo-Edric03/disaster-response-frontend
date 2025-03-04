@@ -175,6 +175,10 @@ let currentPage = 1;
 const itemsPerPage = 5;
 let allRequests = [];
 
+document.addEventListener("DOMContentLoaded", () => {
+    fetchRequests();
+});
+
 function fetchRequests() {
     socket.on("updateRequests", (requests) => {
         console.log("Received updated requests:", requests);
