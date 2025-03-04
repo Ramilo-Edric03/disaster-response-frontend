@@ -34,6 +34,7 @@
       class="w-full max-w-md bg-white p-6 rounded-lg shadow-md mt-6 hidden"
     >
       <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
+      <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
       <div class="flex gap-2">
         <button
           onclick="enableRequesterPin()"
@@ -48,6 +49,14 @@
           Use GPS
         </button>
       </div>
+      <button
+        onclick="confirmRequesterLocation()"
+        id="confirm-requester-btn"
+        class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2 hidden"
+      >
+        Confirm Location
+      </button>
+
       <input
         type="text"
         id="requester-location-input"
@@ -80,6 +89,7 @@
       class="w-full max-w-md bg-white p-6 rounded-lg shadow-md mt-6 hidden"
     >
       <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
+      <h3 class="text-xl font-semibold mb-2">Set Your Location</h3>
       <div class="flex gap-2">
         <button
           onclick="enableVolunteerPin()"
@@ -94,6 +104,14 @@
           Use GPS
         </button>
       </div>
+      <button
+        onclick="confirmVolunteerLocation()"
+        id="confirm-volunteer-btn"
+        class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2 hidden"
+      >
+        Confirm Location
+      </button>
+
       <input
         type="text"
         id="volunteer-location-input"

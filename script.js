@@ -278,14 +278,14 @@ function drawRoute(start, end) {
         });
 }
 
-let requesterPin, volunteerPin; // Store markers for both users
+let requesterPin, volunteerPin;
 let selectingRequesterLocation = false;
 let selectingVolunteerLocation = false;
 
-// Enable requester to continuously set a pin until they confirm
+// Enable requester to set a pin on the map
 function enableRequesterPin() {
     selectingRequesterLocation = true;
-    map.setView([map.getCenter().lat, map.getCenter().lng], 16); // Zoom in for better accuracy
+    map.setView([map.getCenter().lat, map.getCenter().lng], 16); // Zoom in
 
     map.on("click", (e) => {
         if (!selectingRequesterLocation) return;
@@ -295,14 +295,14 @@ function enableRequesterPin() {
 
         console.log("Requester selecting location:", requesterLat, requesterLng);
 
-        // Remove previous marker if it exists
         if (requesterPin) map.removeLayer(requesterPin);
 
-        // Add new marker
         requesterPin = L.marker([requesterLat, requesterLng])
             .addTo(map)
             .bindPopup("Click Confirm to set this location.")
             .openPopup();
+
+        document.getElementById("confirm-requester-btn").classList.remove("hidden");
     });
 }
 
@@ -314,18 +314,19 @@ function confirmRequesterLocation() {
     }
 
     selectingRequesterLocation = false;
-    map.off("click"); // Disable further selection
+    map.off("click");
 
+    document.getElementById("confirm-requester-btn").classList.add("hidden");
     document.getElementById("request-status").innerText = "Location set using pin.";
     document.getElementById("request-help-btn").disabled = false;
     
     alert("Requester location confirmed!");
 }
 
-// Enable volunteer to continuously set a pin until they confirm
+// Enable volunteer to set a pin on the map
 function enableVolunteerPin() {
     selectingVolunteerLocation = true;
-    map.setView([map.getCenter().lat, map.getCenter().lng], 16); // Zoom in for better accuracy
+    map.setView([map.getCenter().lat, map.getCenter().lng], 16);
 
     map.on("click", (e) => {
         if (!selectingVolunteerLocation) return;
@@ -335,14 +336,14 @@ function enableVolunteerPin() {
 
         console.log("Volunteer selecting location:", volunteerLat, volunteerLng);
 
-        // Remove previous marker if it exists
         if (volunteerPin) map.removeLayer(volunteerPin);
 
-        // Add new marker
         volunteerPin = L.marker([volunteerLat, volunteerLng])
             .addTo(map)
             .bindPopup("Click Confirm to set this location.")
             .openPopup();
+
+        document.getElementById("confirm-volunteer-btn").classList.remove("hidden");
     });
 }
 
@@ -354,9 +355,12 @@ function confirmVolunteerLocation() {
     }
 
     selectingVolunteerLocation = false;
-    map.off("click"); // Disable further selection
+    map.off("click");
+
+    document.getElementById("confirm-volunteer-btn").classList.add("hidden");
 
     alert("Volunteer location confirmed!");
 }
+
 
 
