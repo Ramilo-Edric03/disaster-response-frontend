@@ -128,7 +128,26 @@ function acceptRequest(lat, lng, locationName) {
 }
 
 // Volunteer uses GPS location
-function acceptRequestGPS(requesterLat, requesterLng) {
+function acceptRequestGPS() {
+    let requestCards = document.querySelectorAll(".request-card button.accept-btn");
+
+    if (requestCards.length === 0) {
+        alert("No requests available.");
+        return;
+    }
+
+    // Find the first request and extract the requester's location
+    let firstRequestButton = requestCards[0];
+    let requestData = firstRequestButton.getAttribute("onclick").match(/\d+\.\d+/g);
+
+    if (!requestData || requestData.length < 2) {
+        alert("Error: Could not determine requester location.");
+        return;
+    }
+
+    let requesterLat = parseFloat(requestData[0]);
+    let requesterLng = parseFloat(requestData[1]);
+
     console.log("Volunteer using GPS location...");
 
     navigator.geolocation.getCurrentPosition((position) => {
