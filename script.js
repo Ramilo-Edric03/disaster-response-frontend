@@ -42,6 +42,33 @@ function requestHelp() {
     sendHelpRequest(requesterLat, requesterLng);
 }
 
+function sendHelpRequest(latitude, longitude) {
+    console.log("Sending help request from:", latitude, longitude);
+
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+        .then(response => response.json())
+        .then(data => {
+            let locationName = data.display_name || "Unknown Location";
+
+            console.log("Detected location:", locationName);
+
+            if (requesterMarker) map.removeLayer(requesterMarker);
+            requesterMarker = L.marker([latitude, longitude])
+                .addTo(map)
+                .bindPopup(`Requester at ${locationName}`)
+                .openPopup();
+
+            socket.emit("sendRequest", { lat: latitude, lng: longitude, locationName });
+
+            document.getElementById("request-status").innerText = `Request Sent from ${locationName}. Waiting for a volunteer...`;
+        })
+        .catch(error => {
+            console.error("Error fetching location name:", error);
+            socket.emit("sendRequest", { lat: latitude, lng: longitude, locationName: "Unknown Location" });
+        });
+}
+
+
 function setRequesterLocationManual() {
     let locationInput = document.getElementById("requester-location-input").value;
     if (!locationInput) {
