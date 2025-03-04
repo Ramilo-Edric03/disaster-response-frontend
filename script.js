@@ -193,3 +193,38 @@ socket.on("updateVolunteerLocation", (data) => {
     }
 });
 
+function drawRoute(start, end) {
+    console.log("Drawing route from", start, "to", end);
+    const apiKey = "9f598a60-2020-4e82-985e-61026c21e8b2"; // Your GraphHopper API key
+    const url = `https://graphhopper.com/api/1/route?point=${start[0]},${start[1]}&point=${end[0]},${end[1]}&vehicle=car&locale=en&points_encoded=false&key=${apiKey}`;
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`GraphHopper request failed: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.paths || data.paths.length === 0) {
+                throw new Error("No route found.");
+            }
+
+            // Remove old route if it exists
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            // Draw the new route
+            routeLayer = L.polyline(data.paths[0].points.coordinates.map(coord => [coord[1], coord[0]]), { 
+                color: "blue", 
+                weight: 4 
+            }).addTo(map);
+            map.fitBounds(routeLayer.getBounds());
+        })
+        .catch(error => {
+            console.error("Error fetching route:", error);
+            alert("Could not fetch route. Please check the location and try again.");
+        });
+}
+
