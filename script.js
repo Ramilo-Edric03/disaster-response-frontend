@@ -32,9 +32,6 @@ function setRole(role) {
     if (role === "volunteer") fetchRequests();
 }
 
-
-
-
 function requestHelp() {
     if (requesterLat === null || requesterLng === null) {
         alert("Please set your location before requesting help.");
@@ -185,17 +182,20 @@ function fetchRequests() {
             const div = document.createElement("div");
             div.className = "request-card";
             div.innerHTML = `<p><strong>Requester #${index + 1}</strong><br>Location: ${req.locationName}</p>
-                             <button class='accept-btn w-1/4 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2' onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
+                             <button class='accept-btn w-1/4 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mt-2' 
+                             onclick='acceptRequest(${req.lat}, ${req.lng})'>Accept</button>`;
             requestList.appendChild(div);
 
+            // Add markers for existing requests
             let marker = L.marker([req.lat, req.lng])
                 .addTo(map)
                 .bindPopup(`Requester #${index + 1}<br>${req.locationName}`);
-            
+
             requestMarkers.push(marker);
         });
     });
 }
+
 
 function clearAllRequests() {
     if (confirm("Are you sure you want to clear all requests?")) {
