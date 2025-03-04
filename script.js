@@ -270,3 +270,48 @@ function drawRoute(start, end) {
         });
 }
 
+let requesterPin, volunteerPin; // Store the marker for each user
+
+// Allow the requester to place a pin on the map
+function enableRequesterPin() {
+    map.once("click", (e) => {
+        requesterLat = e.latlng.lat;
+        requesterLng = e.latlng.lng;
+
+        console.log("Requester set location:", requesterLat, requesterLng);
+
+        // Remove previous marker if it exists
+        if (requesterPin) map.removeLayer(requesterPin);
+
+        // Add new marker
+        requesterPin = L.marker([requesterLat, requesterLng])
+            .addTo(map)
+            .bindPopup("Your selected location")
+            .openPopup();
+
+        document.getElementById("request-status").innerText = "Location set using pin.";
+        document.getElementById("request-help-btn").disabled = false;
+    });
+}
+
+// Allow the volunteer to place a pin on the map
+function enableVolunteerPin() {
+    map.once("click", (e) => {
+        volunteerLat = e.latlng.lat;
+        volunteerLng = e.latlng.lng;
+
+        console.log("Volunteer set location:", volunteerLat, volunteerLng);
+
+        // Remove previous marker if it exists
+        if (volunteerPin) map.removeLayer(volunteerPin);
+
+        // Add new marker
+        volunteerPin = L.marker([volunteerLat, volunteerLng])
+            .addTo(map)
+            .bindPopup("Your selected location")
+            .openPopup();
+
+        alert("Location set using pin!");
+    });
+}
+
