@@ -195,9 +195,6 @@ function fetchRequests() {
             requestMarkers.push(marker);
         });
     });
-
-    // Manually request existing requests when a volunteer joins
-    socket.emit("getRequests");
 }
 
 function clearAllRequests() {
