@@ -270,15 +270,22 @@ function drawRoute(start, end) {
         });
 }
 
-let requesterPin, volunteerPin; // Store the marker for each user
+let requesterPin, volunteerPin; // Store markers for both users
+let selectingRequesterLocation = false;
+let selectingVolunteerLocation = false;
 
-// Allow the requester to place a pin on the map
+// Enable requester to continuously set a pin until they confirm
 function enableRequesterPin() {
-    map.once("click", (e) => {
+    selectingRequesterLocation = true;
+    map.setView([map.getCenter().lat, map.getCenter().lng], 16); // Zoom in for better accuracy
+
+    map.on("click", (e) => {
+        if (!selectingRequesterLocation) return;
+
         requesterLat = e.latlng.lat;
         requesterLng = e.latlng.lng;
 
-        console.log("Requester set location:", requesterLat, requesterLng);
+        console.log("Requester selecting location:", requesterLat, requesterLng);
 
         // Remove previous marker if it exists
         if (requesterPin) map.removeLayer(requesterPin);
@@ -286,21 +293,39 @@ function enableRequesterPin() {
         // Add new marker
         requesterPin = L.marker([requesterLat, requesterLng])
             .addTo(map)
-            .bindPopup("Your selected location")
+            .bindPopup("Click Confirm to set this location.")
             .openPopup();
-
-        document.getElementById("request-status").innerText = "Location set using pin.";
-        document.getElementById("request-help-btn").disabled = false;
     });
 }
 
-// Allow the volunteer to place a pin on the map
+// Confirm requester's location
+function confirmRequesterLocation() {
+    if (requesterLat === null || requesterLng === null) {
+        alert("Please select a location first.");
+        return;
+    }
+
+    selectingRequesterLocation = false;
+    map.off("click"); // Disable further selection
+
+    document.getElementById("request-status").innerText = "Location set using pin.";
+    document.getElementById("request-help-btn").disabled = false;
+    
+    alert("Requester location confirmed!");
+}
+
+// Enable volunteer to continuously set a pin until they confirm
 function enableVolunteerPin() {
-    map.once("click", (e) => {
+    selectingVolunteerLocation = true;
+    map.setView([map.getCenter().lat, map.getCenter().lng], 16); // Zoom in for better accuracy
+
+    map.on("click", (e) => {
+        if (!selectingVolunteerLocation) return;
+
         volunteerLat = e.latlng.lat;
         volunteerLng = e.latlng.lng;
 
-        console.log("Volunteer set location:", volunteerLat, volunteerLng);
+        console.log("Volunteer selecting location:", volunteerLat, volunteerLng);
 
         // Remove previous marker if it exists
         if (volunteerPin) map.removeLayer(volunteerPin);
@@ -308,10 +333,22 @@ function enableVolunteerPin() {
         // Add new marker
         volunteerPin = L.marker([volunteerLat, volunteerLng])
             .addTo(map)
-            .bindPopup("Your selected location")
+            .bindPopup("Click Confirm to set this location.")
             .openPopup();
-
-        alert("Location set using pin!");
     });
 }
+
+// Confirm volunteer's location
+function confirmVolunteerLocation() {
+    if (volunteerLat === null || volunteerLng === null) {
+        alert("Please select a location first.");
+        return;
+    }
+
+    selectingVolunteerLocation = false;
+    map.off("click"); // Disable further selection
+
+    alert("Volunteer location confirmed!");
+}
+
 
